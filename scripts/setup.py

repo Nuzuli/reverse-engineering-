@@ -1,0 +1,31 @@
+import subprocess
+import sys
+
+# Daftar library python penting untuk Reverse Engineering
+REQUIRED_PACKAGES = [
+    "pefile",       # Untuk menganalisis struktur file PE (Windows EXE/DLL)
+    "frida-tools",  # Untuk dynamic instrumentation
+    "capstone",     # Disassembler framework
+    "keystone-engine", # Assembler framework
+    "ropper",       # Untuk mencari ROP gadgets (exploit development)
+    "pwntools"      # Framework untuk CTF dan exploit development
+]
+
+def install_packages():
+    print("[*] Memulai instalasi environment Python untuk Reverse Engineering...")
+    for package in REQUIRED_PACKAGES:
+        try:
+            print(f"[+] Memeriksa {package}...")
+            __import__(package)
+            print(f"[✓] {package} sudah terinstal.")
+        except ImportError:
+            print(f"[-] {package} tidak ditemukan. Menginstal...")
+            try:
+                subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+                print(f"[✓] Berhasil menginstal {package}.")
+            except Exception as e:
+                print(f"[X] Gagal menginstal {package}. Error: {e}")
+
+if __name__ == "__main__":
+    install_packages()
+    print("\n[✓] Setup selesai! Environment siap digunakan untuk analisis.")
