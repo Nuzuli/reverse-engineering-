@@ -1,3 +1,4 @@
-No third-party dependencies required.
 
-The project uses Python standard library modules only.
+
+pytest
+pytest-cov
