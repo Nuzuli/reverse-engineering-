@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.analyze_file import analyze_file
+from scripts.analyze_file import AnalysisError, analyze_file
 
 
 class TestAnalyzeFile(unittest.TestCase):
@@ -25,8 +25,13 @@ class TestAnalyzeFile(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp_dir:
             missing = Path(temp_dir) / "missing.bin"
 
-            with self.assertRaises(FileNotFoundError):
+            with self.assertRaises(AnalysisError):
                 analyze_file(missing)
+
+    def test_directory_raises_error(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            with self.assertRaises(AnalysisError):
+                analyze_file(Path(temp_dir))
 
 
 if __name__ == "__main__":
