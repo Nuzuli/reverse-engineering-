@@ -1,5 +1,6 @@
-import tempfile
-import unittest
+from src.analyzer import
+[nama_fungsi_atau_class_kamu]
+
 from pathlib import Path
 
 from scripts.analyze_file import AnalysisError, analyze_file
