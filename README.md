@@ -1,65 +1,57 @@
-# datafactor - Reverse Engineering 🛡️🔍
+DataFactor — Reverse Engineering 🛡️
 
-Selamat datang di sub-project **datafactor** yang berfokus pada **Reverse Engineering**. Repositori ini digunakan untuk mendokumentasikan proses analisis, pembedahan sistem (binary/software), eksperimen dekompilasi, serta riset keamanan siber secara mendalam.
+A learning project focused on basic file inspection, reverse engineering methodology, and reproducible analysis documentation.
 
-## 📁 Struktur Folder
-* `/binaries` : Tempat menyimpan sampel file binary atau aplikasi yang dianalisis (pastikan aman/bukan malware aktif).
-* `/docs` : Dokumentasi hasil analisis statis, dinamis, alur kerja (control flow graph), dan temuan penting.
-* `/scripts` : Script otomatisasi penunjang (Python, Frida scripts, atau IDAPython).
-* `/tools` : Catatan konfigurasi atau plugin untuk perangkat lunak reverse engineering.
+Features
 
-## 🛠️ Tools yang Digunakan
-Kami menggunakan beberapa industri-standar tools berikut untuk analisis:
-* **Ghidra** – Analisis binary statis & dekompilator buatan NSA.
-* **x64dbg / GDB** – Debugging dinamis untuk Windows & Linux.
-* **IDA Pro** – Disassembler dan debugger tingkat lanjut.
-* **Frida** – Dynamic Binary Instrumentation untuk inspeksi runtime.
+- Calculate a file's SHA-256 hash.
+- Report file size and filename.
+- Display the first 16 bytes of a file as hexadecimal.
+- Provide a reusable analysis report template.
+- Include automated unit tests for basic file inspection.
 
-## 🚀 Alur Kerja Analisis
-1. **Analisis Awal:** Memeriksa arsitektur file (x86, x64, ARM) dan proteksi file (packing/obfuscation).
-2. **Disassemble & Decompile:** Membedah biner menjadi assembly atau pseudo-code agar bisa dibaca manusia.
-3. **Debugging Dinamis:** Memantau jalannya program secara real-time untuk memvalidasi logika.
-4. **Dokumentasi & Kesimpulan:** Mencatat celah keamanan, struktur data, atau merekonstruksi kode asal.
+Project Structure
 
----
-*Catatan: Semua aktivitas dalam proyek ini ditujukan untuk tujuan edukasi, riset keamanan, dan pemahaman sistem (interoperabilitas) secara legal.*
+.
+├── README.md
+├── docs/
+│   └── TEMPLATE_ANALYSIS.md
+├── scripts/
+│   ├── __init__.py
+│   └── analyze_file.py
+└── tests/
+    └── test_analyze_file.py
 
-📦 Instalasi dan Persiapan
+Requirements
 
-Persyaratan
+- Python 3.8 or newer
+- No third-party Python packages required
 
-- Python 3 untuk menjalankan skrip Python.
-- Ghidra atau IDA Pro untuk analisis statis.
-- GDB atau x64dbg untuk debugging sesuai sistem operasi.
+Usage
 
-Cara Memulai
+Run the analyzer with a file path:
 
-1. Clone repository:
-   "git clone https://github.com/Nuzuli/reverse-engineering-.git"
-2. Masuk ke folder repository.
-3. Baca dokumentasi sebelum menjalankan skrip analisis.
+python scripts/analyze_file.py path/to/sample.bin
 
-🧪 Validasi Hasil
+The script reports the filename, size in bytes, SHA-256 hash, and first 16 bytes in hexadecimal.
 
-- Catat hash SHA-256 setiap sampel.
-- Dokumentasikan versi tools dan sistem operasi.
-- Sertakan bukti untuk setiap temuan penting.
-- Bedakan fakta hasil pengamatan dari hipotesis.
+Run Tests
 
-📝 Standar Laporan
+From the repository root, run:
 
-Setiap laporan sebaiknya mencakup:
+python -m unittest discover -s tests -v
 
-1. Tujuan analisis.
-2. Informasi file dan hash.
-3. Metode serta tools yang digunakan.
-4. Temuan dan bukti pendukung.
-5. Kesimpulan, batasan, dan rekomendasi.
+Analysis Workflow
 
-🤝 Kontribusi
+1. Record sample information using "docs/TEMPLATE_ANALYSIS.md".
+2. Inspect basic file properties using the analysis script.
+3. Perform further static or dynamic analysis only in an appropriate, isolated environment.
+4. Document observations, evidence, limitations, and conclusions.
 
-Kontribusi berupa perbaikan dokumentasi, skrip, dan pengujian sangat diterima. Jelaskan perubahan dan cara menguji setiap kontribusi.
+Safety and Legal Notice
 
-⚠️ Penafian
+Analyze only files you are authorized to examine. Do not execute untrusted samples on your primary device. Use an isolated environment for dynamic analysis and follow applicable laws and policies.
 
-Gunakan metode analisis hanya pada file atau sistem yang penggunaannya telah mendapat izin. Jangan menjalankan sampel tidak tepercaya pada perangkat utama.
+Project Status
+
+This project currently provides basic file metadata inspection and a starting point for structured reverse engineering documentation. It does not yet perform binary disassembly or decompilation.
