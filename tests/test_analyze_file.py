@@ -1,5 +1,6 @@
-import unittest
-import tempfile
+import pytest
+from pathlib import Path
+
 from pathlib import Path
 from src.analyzer import analyze_file, AnalysisError
 
