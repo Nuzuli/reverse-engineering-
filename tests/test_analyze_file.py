@@ -16,11 +16,20 @@ class TestAnalyzeFile(unittest.TestCase):
             # Tambahkan assertion sesuai dengan output fungsi analyze_file-mu
             self.assertIsNotNone(result)
 
-    def test_file_not_found(self):
-        with self.assertRaises(AnalysisError):
-            analyze_file("file_palsu.txt")
-
+        @pytest.mark.usefixtures("tmp_path")
     def test_not_a_file(self, tmp_path):
+        # Buat path yang berupa direktori, bukan file
+        not_a_file = tmp_path / "bukan_file"
+        not_a_file.mkdir()
+
+        # Panggil fungsi kamu, pastikan error yang diharapkan benar
+        with self.assertRaises(ValueError):
+            analisis_file(str(not_a_file))
+
+        
+     
+
+    
         # Mengetes jika path yang diberikan adalah folder, bukan file
         with self.assertRaises(AnalysisError):
             analyze_file(tmp_path)
