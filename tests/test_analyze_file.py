@@ -99,7 +99,7 @@ class TestMain(unittest.TestCase):
         self.assertIn(hashlib.sha256(b"hello").hexdigest(), output)
 
     def test_main_reports_empty_file(self):
-        path = self.tmp / "empty.bin"
+    I    path = self.tmp / "empty.bin"
         path.write_bytes(b"")
 
         output = self._run_main(path)
@@ -116,3 +116,7 @@ class TestMain(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+
+
