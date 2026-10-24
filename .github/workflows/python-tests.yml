@@ -16,15 +16,14 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.x"
+          python-version: "3.12"
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pytest pytest-cov
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install -r requirements.txt
 
-      - name: Run unit tests
+      - name: Run unit tests with coverage
         env:
           PYTHONPATH: .
-        run: python -m pytest tests/ -v
+        run: python -m pytest tests/ -v --cov=src --cov-report=term --cov-fail-under=70
