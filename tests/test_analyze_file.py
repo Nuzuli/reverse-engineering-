@@ -99,7 +99,7 @@ class TestMain(unittest.TestCase):
         self.assertIn(hashlib.sha256(b"hello").hexdigest(), output)
 
     def test_main_reports_empty_file(self):
-    I    path = self.tmp / "empty.bin"
+        path = self.tmp / "empty.bin"
         path.write_bytes(b"")
 
         output = self._run_main(path)
@@ -112,11 +112,3 @@ class TestMain(unittest.TestCase):
                 with self.assertRaises(SystemExit) as ctx:
                     main()
         self.assertEqual(ctx.exception.code, 2)
-
-
-if __name__ == "__main__":
-    unittest.main()
-
-
-
-
