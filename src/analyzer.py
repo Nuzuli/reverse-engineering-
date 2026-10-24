@@ -1,66 +1,117 @@
-#!/usr/bin/env python3
-"""Inspect basic file properties for reverse engineering."""
-
-import argparse
+import contextlib
 import hashlib
+import io
+import tempfile
+import unittest
 from pathlib import Path
+from unittest import mock
+
+from src.analyzer import AnalysisError, analyze_file, main
 
 
-class AnalysisError(Exception):
-    """Raised when a file cannot be analyzed."""
+class TestAnalyzeFile(unittest.TestCase):
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.tmp = Path(self._tmp.name)
+
+    def _make_file(self, data, name="sample.bin"):
+        path = self.tmp / name
+        path.write_bytes(data)
+        return path
+
+    def test_returns_expected_fields(self):
+        result = analyze_file(self._make_file(b"hello"))
+
+        self.assertEqual(
+            set(result.keys()),
+            {"name", "size_bytes", "sha256", "header_hex"},
+        )
+        self.assertEqual(result["name"], "sample.bin")
+        self.assertEqual(result["size_bytes"], 5)
+        self.assertEqual(result["sha256"], hashlib.sha256(b"hello").hexdigest())
+        self.assertEqual(result["header_hex"], "68 65 6c 6c 6f")
+
+    def test_accepts_string_path(self):
+        path = self._make_file(b"abc")
+        result = analyze_file(str(path))
+        self.assertEqual(result["size_bytes"], 3)
+
+    def test_header_is_limited_to_16_bytes(self):
+        data = bytes(range(32))
+        result = analyze_file(self._make_file(data))
+
+        expected = " ".join(f"{b:02x}" for b in range(16))
+        self.assertEqual(result["header_hex"], expected)
+        self.assertEqual(result["sha256"], hashlib.sha256(data).hexdigest())
+
+    def test_empty_file(self):
+        result = analyze_file(self._make_file(b""))
+
+        self.assertEqual(result["size_bytes"], 0)
+        self.assertEqual(result["header_hex"], "")
+        self.assertEqual(result["sha256"], hashlib.sha256(b"").hexdigest())
+
+    def test_large_file_uses_chunked_read(self):
+        data = b"A" * 20000
+        result = analyze_file(self._make_file(data))
+
+        self.assertEqual(result["size_bytes"], 20000)
+        self.assertEqual(result["sha256"], hashlib.sha256(data).hexdigest())
+
+    def test_missing_file_raises(self):
+        with self.assertRaises(AnalysisError):
+            analyze_file(self.tmp / "tidak_ada.bin")
+
+    def test_directory_raises(self):
+        with self.assertRaises(AnalysisError):
+            analyze_file(self.tmp)
+
+    def test_unreadable_file_raises(self):
+        path = self._make_file(b"data")
+        with mock.patch.object(Path, "open", side_effect=OSError("boom")):
+            with self.assertRaises(AnalysisError):
+                analyze_file(path)
 
 
-def analyze_file(file_path):
-    """Return basic information about a regular file."""
-    file_path = Path(file_path)
+class TestMain(unittest.TestCase):
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.tmp = Path(self._tmp.name)
 
-    if not file_path.exists():
-        raise AnalysisError(f"File not found: {file_path}")
+    def _run_main(self, path):
+        buffer = io.StringIO()
+        with mock.patch("sys.argv", ["analyzer.py", str(path)]):
+            with contextlib.redirect_stdout(buffer):
+                main()
+        return buffer.getvalue()
 
-    if not file_path.is_file():
-        raise AnalysisError(f"Not a regular file: {file_path}")
+    def test_main_prints_report(self):
+        path = self.tmp / "sample.bin"
+        path.write_bytes(b"hello")
 
-    sha256 = hashlib.sha256()
+        output = self._run_main(path)
 
-    try:
-        with file_path.open("rb") as file:
-            header = file.read(16)
-            sha256.update(header)
+        self.assertIn("File name : sample.bin", output)
+        self.assertIn("Size : 5 bytes", output)
+        self.assertIn(hashlib.sha256(b"hello").hexdigest(), output)
 
-            for chunk in iter(lambda: file.read(8192), b""):
-                sha256.update(chunk)
+    def test_main_reports_empty_file(self):
+        path = self.tmp / "empty.bin"
+        path.write_bytes(b"")
 
-    except OSError as error:
-        raise AnalysisError(
-            f"Unable to read file: {file_path}"
-        ) from error
+        output = self._run_main(path)
 
-    return {
-        "name": file_path.name,
-        "size_bytes": file_path.stat().st_size,
-        "sha256": sha256.hexdigest(),
-        "header_hex": header.hex(" "),
-    }
+        self.assertIn("(empty file)", output)
 
-
-def main():
-    parser = argparse.ArgumentParser(
-        description="Inspect basic properties of a file."
-    )
-    parser.add_argument("file", help="Path to the file to analyze")
-    args = parser.parse_args()
-
-    try:
-        result = analyze_file(Path(args.file))
-    except AnalysisError as error:
-        parser.error(str(error))
-
-    print("=== File Analysis Report ===")
-    print(f"File name : {result['name']}")
-    print(f"Size      : {result['size_bytes']} bytes")
-    print(f"SHA-256   : {result['sha256']}")
-    print(f"Header    : {result['header_hex'] or '(empty file)'}")
+    def test_main_exits_with_error_for_missing_file(self):
+        with mock.patch("sys.argv", ["analyzer.py", str(self.tmp / "none.bin")]):
+            with contextlib.redirect_stderr(io.StringIO()):
+                with self.assertRaises(SystemExit) as ctx:
+                    main()
+        self.assertEqual(ctx.exception.code, 2)
 
 
 if __name__ == "__main__":
-    main()
+    unittest.main()
