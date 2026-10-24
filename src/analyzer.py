@@ -4,13 +4,14 @@
 import argparse
 import hashlib
 from pathlib import Path
+from typing import Any, Dict, Union
 
 
 class AnalysisError(Exception):
     """Raised when a file cannot be analyzed."""
 
 
-def analyze_file(file_path):
+def analyze_file(file_path: Union[str, Path]) -> Dict[str, Any]:
     """Return basic information about a regular file."""
     file_path = Path(file_path)
 
@@ -42,7 +43,7 @@ def analyze_file(file_path):
     }
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Inspect basic properties of a file."
     )
