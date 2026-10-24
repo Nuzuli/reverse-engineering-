@@ -14,54 +14,52 @@ A learning project focused on basic file inspection, reverse engineering methodo
 - Report file size and filename.
 - Display the first 16 bytes of a file as hexadecimal.
 - Provide a reusable analysis report template.
-- Automated unit tests with GitHub Actions (CI).
+- Automated unit tests with coverage gate in GitHub Actions.
 
 ## Project Structure
 
-```
-.
-├── .github/workflows/python-tests.yml
-├── docs/
-│   └── TEMPLATE_ANALYSIS.md
-├── src/
-│   └── analyzer.py
-├── tests/
-│   └── test_analyze_file.py
-├── requirements.txt
-├── CONTRIBUTING.md
-├── LICENSE
-└── README.md
-```
+- `src/analyzer.py`: file analyzer and command-line entry point
+- `tests/test_analyze_file.py`: unit tests
+- `docs/TEMPLATE_ANALYSIS.md`: analysis report template
+- `.github/workflows/python-tests.yml`: CI workflow
+- `requirements.txt`: pinned test dependencies
+- `CHANGELOG.md`, `CONTRIBUTING.md`, `LICENSE`
 
 ## Requirements
 
 - Python 3.8 or newer
-- `pytest` and `pytest-cov` (for running tests)
+- `pytest` and `pytest-cov` (test only; the analyzer itself has no dependencies)
 
-Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
+Install test dependencies with `pip install -r requirements.txt`.
 
 ## Usage
 
-Use the analyzer from Python, run from the repository root:
+Command line, from the repository root:
 
-```python
-from src.analyzer import analyze_file
+`python src/analyzer.py path/to/sample.bin`
 
-result = analyze_file("path/to/sample.bin")
-print(result)
-```
+The report shows the file name, size in bytes, SHA-256 hash, and first 16 bytes in hexadecimal. An empty file is reported as `(empty file)`.
+
+As a Python module:
+
+`from src.analyzer import analyze_file`
+
+`analyze_file("path/to/sample.bin")` returns a dictionary with the keys `name`, `size_bytes`, `sha256`, and `header_hex`.
+
+## Error Handling
+
+`analyze_file` raises `AnalysisError` when the path does not exist, is not a regular file (for example a directory), or cannot be read.
+
+Command-line exit codes:
+
+- `0`: analysis succeeded
+- `2`: analysis failed, with the error message printed to stderr
 
 ## Run Tests
 
 From the repository root:
 
-```bash
-python -m pytest tests/ -v
-```
+`python -m pytest tests/ -v --cov=src --cov-fail-under=80`
 
 Tests also run automatically on every push through GitHub Actions.
 
