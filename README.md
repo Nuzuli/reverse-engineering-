@@ -8,6 +8,10 @@
 
 A learning project focused on basic file inspection, reverse engineering methodology, and reproducible analysis documentation.
 
+## Project Type
+
+This is a standard library only command-line tool for file inspection, not infrastructure code.
+
 ## Features
 
 - Calculate a file's SHA-256 hash.
@@ -24,7 +28,7 @@ A learning project focused on basic file inspection, reverse engineering methodo
 - `docs/TEMPLATE_ANALYSIS.md`: analysis report template
 - `.github/workflows/`: CI and the manual lockfile workflow
 - `requirements.txt` and `requirements-lock.txt`: test tools and their pinned lockfile
-- `Dockerfile`, `CHANGELOG.md`, `CONTRIBUTING.md`, `LICENSE`
+- `CHANGELOG.md`, `CONTRIBUTING.md`, `LICENSE`
 
 ## Quick Start (fresh clone)
 
@@ -66,15 +70,6 @@ As a Python module:
 `from src.analyzer import analyze_file`
 
 `analyze_file("path/to/sample.bin")` returns a dictionary with the keys `name`, `size_bytes`, `sha256`, and `header_hex`. Use `src.report.format_report` to render it as text.
-
-## Docker
-
-Run the analyzer in an isolated container:
-
-```
-docker build -t reverse-engineering .
-docker run --rm -v "$(pwd)/sample.bin:/data/sample.bin:ro" reverse-engineering /data/sample.bin
-```
 
 ## Error Handling
 
