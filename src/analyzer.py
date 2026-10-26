@@ -6,6 +6,8 @@ import hashlib
 from pathlib import Path
 from typing import Any, Dict, Union
 
+from src.report import format_report
+
 
 class AnalysisError(Exception):
     """Raised when a file cannot be analyzed."""
@@ -55,11 +57,7 @@ def main() -> None:
     except AnalysisError as error:
         parser.error(str(error))
 
-    print("=== File Analysis Report ===")
-    print(f"File name : {result['name']}")
-    print(f"Size      : {result['size_bytes']} bytes")
-    print(f"SHA-256   : {result['sha256']}")
-    print(f"Header    : {result['header_hex'] or '(empty file)'}")
+    print(format_report(result))
 
 
 if __name__ == "__main__":
