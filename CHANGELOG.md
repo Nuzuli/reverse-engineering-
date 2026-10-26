@@ -3,6 +3,14 @@
 All notable changes to this project are documented in this file.
 The format follows Keep a Changelog.
 
+## [Unreleased]
+
+### Removed
+- `Dockerfile` and the Docker section of the README. The project is a standard library command-line tool, not infrastructure code.
+
+### Added
+- "Project Type" section in the README.
+
 ## [0.2.0] - 2026-10-25
 
 ### Added
