@@ -3,10 +3,13 @@
 
 import argparse
 import hashlib
+import logging
 from pathlib import Path
 from typing import Any, Dict, Union
 
 from src.report import format_report
+
+logger = logging.getLogger(__name__)
 
 
 class AnalysisError(Exception):
@@ -16,11 +19,14 @@ class AnalysisError(Exception):
 def analyze_file(file_path: Union[str, Path]) -> Dict[str, Any]:
     """Return basic information about a regular file."""
     file_path = Path(file_path)
+    logger.info("Analyzing %s", file_path)
 
     if not file_path.exists():
+        logger.debug("Rejected %s: file not found", file_path)
         raise AnalysisError(f"File not found: {file_path}")
 
     if not file_path.is_file():
+        logger.debug("Rejected %s: not a regular file", file_path)
         raise AnalysisError(f"Not a regular file: {file_path}")
 
     sha256 = hashlib.sha256()
@@ -33,13 +39,17 @@ def analyze_file(file_path: Union[str, Path]) -> Dict[str, Any]:
             for chunk in iter(lambda: file.read(8192), b""):
                 sha256.update(chunk)
     except OSError as error:
+        logger.debug("Read failed for %s: %s", file_path, error)
         raise AnalysisError(
             f"Unable to read file: {file_path}"
         ) from error
 
+    size = file_path.stat().st_size
+    logger.info("Finished %s (%d bytes)", file_path.name, size)
+
     return {
         "name": file_path.name,
-        "size_bytes": file_path.stat().st_size,
+        "size_bytes": size,
         "sha256": sha256.hexdigest(),
         "header_hex": header.hex(" "),
     }
