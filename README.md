@@ -36,7 +36,7 @@ Install test dependencies with `pip install -r requirements.txt`.
 
 Command line, from the repository root:
 
-`python src/analyzer.py path/to/sample.bin`
+python -m src.analyzer
 
 The report shows the file name, size in bytes, SHA-256 hash, and first 16 bytes in hexadecimal. An empty file is reported as `(empty file)`.
 
