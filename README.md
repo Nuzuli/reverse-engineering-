@@ -14,37 +14,67 @@ A learning project focused on basic file inspection, reverse engineering methodo
 - Report file size and filename.
 - Display the first 16 bytes of a file as hexadecimal.
 - Provide a reusable analysis report template.
-- Automated unit tests with coverage gate in GitHub Actions.
+- Automated tests, linting, type checking, and a dependency audit in GitHub Actions.
 
 ## Project Structure
 
-- `src/analyzer.py`: file analyzer and command-line entry point
-- `tests/test_analyze_file.py`: unit tests
+- `src/analyzer.py`: file analysis and the command-line entry point
+- `src/report.py`: plain-text report formatting
+- `tests/`: unit tests
 - `docs/TEMPLATE_ANALYSIS.md`: analysis report template
-- `.github/workflows/python-tests.yml`: CI workflow
-- `requirements.txt`: pinned test dependencies
-- `CHANGELOG.md`, `CONTRIBUTING.md`, `LICENSE`
+- `.github/workflows/`: CI and the manual lockfile workflow
+- `requirements.txt` and `requirements-lock.txt`: test tools and their pinned lockfile
+- `Dockerfile`, `CHANGELOG.md`, `CONTRIBUTING.md`, `LICENSE`
 
-## Requirements
+## Quick Start (fresh clone)
 
-- Python 3.8 or newer
-- `pytest` and `pytest-cov` (test only; the analyzer itself has no dependencies)
+Python 3.8 or newer is required. The analyzer itself has no dependencies; the tools below are only for testing.
 
-Install test dependencies with `pip install -r requirements.txt`.
+```
+git clone https://github.com/Nuzuli/reverse-engineering-.git
+cd reverse-engineering-
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python -m pytest tests/ -v
+```
+
+On Windows, activate the environment with `.venv\Scripts\activate`.
+
+For an exact, reproducible toolchain, install from the lockfile instead: `pip install -r requirements-lock.txt`. After changing `requirements.txt`, regenerate it by running the manual "Update lockfile" workflow in the Actions tab.
 
 ## Usage
 
-Command line, from the repository root:
+Run from the repository root:
 
-python -m src.analyzer
+`python -m src.analyzer path/to/sample.bin`
 
-The report shows the file name, size in bytes, SHA-256 hash, and first 16 bytes in hexadecimal. An empty file is reported as `(empty file)`.
+Example output:
+
+```
+=== File Analysis Report ===
+File name : sample.bin
+Size      : 5 bytes
+SHA-256   : 2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824
+Header    : 68 65 6c 6c 6f
+```
+
+An empty file is reported as `(empty file)`.
 
 As a Python module:
 
 `from src.analyzer import analyze_file`
 
-`analyze_file("path/to/sample.bin")` returns a dictionary with the keys `name`, `size_bytes`, `sha256`, and `header_hex`.
+`analyze_file("path/to/sample.bin")` returns a dictionary with the keys `name`, `size_bytes`, `sha256`, and `header_hex`. Use `src.report.format_report` to render it as text.
+
+## Docker
+
+Run the analyzer in an isolated container:
+
+```
+docker build -t reverse-engineering .
+docker run --rm -v "$(pwd)/sample.bin:/data/sample.bin:ro" reverse-engineering /data/sample.bin
+```
 
 ## Error Handling
 
@@ -55,13 +85,21 @@ Command-line exit codes:
 - `0`: analysis succeeded
 - `2`: analysis failed, with the error message printed to stderr
 
-## Run Tests
+## Logging
 
-From the repository root:
+The analyzer uses the standard `logging` module under the logger name `src.analyzer`. Enable it in your own code, for example with `logging.basicConfig(level=logging.INFO)`.
 
-`python -m pytest tests/ -v --cov=src --cov-fail-under=80`
+## Development
 
-Tests also run automatically on every push through GitHub Actions.
+Run the checks locally:
+
+```
+ruff check src tests
+mypy src
+python -m pytest tests/ -v --cov=src --cov-fail-under=80
+```
+
+The same checks run on every push through GitHub Actions.
 
 ## Analysis Workflow
 
