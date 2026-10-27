@@ -5,6 +5,12 @@ The format follows Keep a Changelog.
 
 ## [Unreleased]
 
+### Added
+- `FileNotFoundAnalysisError`, `NotARegularFileError`, and `FileReadError`, all subclasses of `AnalysisError`, so callers can tell failure modes apart. Existing code that catches `AnalysisError` keeps working.
+
+### Changed
+- Analyzer log messages now use structured `key=value` fields (`path`, `name`, `size_bytes`, `reason`, `error`), with tests that assert them.
+
 ## [0.3.0] - 2026-10-27
 
 ### Added
