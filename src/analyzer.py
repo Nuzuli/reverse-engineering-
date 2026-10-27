@@ -7,7 +7,7 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, Union
 
-from src.report import format_report
+from src.report import format_json, format_report
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +60,9 @@ def main() -> None:
         description="Inspect basic properties of a file."
     )
     parser.add_argument("file", help="Path to the file to analyze")
+    parser.add_argument(
+        "--json", action="store_true", help="Print the result as JSON"
+    )
     args = parser.parse_args()
 
     try:
@@ -67,7 +70,7 @@ def main() -> None:
     except AnalysisError as error:
         parser.error(str(error))
 
-    print(format_report(result))
+    print(format_json(result) if args.json else format_report(result))
 
 
 if __name__ == "__main__":
