@@ -16,18 +16,30 @@ class AnalysisError(Exception):
     """Raised when a file cannot be analyzed."""
 
 
+class FileNotFoundAnalysisError(AnalysisError):
+    """Raised when the path does not exist."""
+
+
+class NotARegularFileError(AnalysisError):
+    """Raised when the path exists but is not a regular file."""
+
+
+class FileReadError(AnalysisError):
+    """Raised when a regular file cannot be read."""
+
+
 def analyze_file(file_path: Union[str, Path]) -> Dict[str, Any]:
     """Return basic information about a regular file."""
     file_path = Path(file_path)
-    logger.info("Analyzing %s", file_path)
+    logger.info("analyze_start path=%s", file_path)
 
     if not file_path.exists():
-        logger.debug("Rejected %s: file not found", file_path)
-        raise AnalysisError(f"File not found: {file_path}")
+        logger.debug("analyze_rejected path=%s reason=file_not_found", file_path)
+        raise FileNotFoundAnalysisError(f"File not found: {file_path}")
 
     if not file_path.is_file():
-        logger.debug("Rejected %s: not a regular file", file_path)
-        raise AnalysisError(f"Not a regular file: {file_path}")
+        logger.debug("analyze_rejected path=%s reason=not_a_regular_file", file_path)
+        raise NotARegularFileError(f"Not a regular file: {file_path}")
 
     sha256 = hashlib.sha256()
 
@@ -39,13 +51,13 @@ def analyze_file(file_path: Union[str, Path]) -> Dict[str, Any]:
             for chunk in iter(lambda: file.read(8192), b""):
                 sha256.update(chunk)
     except OSError as error:
-        logger.debug("Read failed for %s: %s", file_path, error)
-        raise AnalysisError(
+        logger.debug("analyze_failed path=%s error=%s", file_path, error)
+        raise FileReadError(
             f"Unable to read file: {file_path}"
         ) from error
 
     size = file_path.stat().st_size
-    logger.info("Finished %s (%d bytes)", file_path.name, size)
+    logger.info("analyze_done name=%s size_bytes=%d", file_path.name, size)
 
     return {
         "name": file_path.name,
