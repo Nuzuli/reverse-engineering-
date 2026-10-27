@@ -17,13 +17,14 @@ This is a standard library only command-line tool for file inspection, not infra
 - Calculate a file's SHA-256 hash.
 - Report file size and filename.
 - Display the first 16 bytes of a file as hexadecimal.
+- Plain text or JSON output.
 - Provide a reusable analysis report template.
 - Automated tests, linting, type checking, and a dependency audit in GitHub Actions.
 
 ## Project Structure
 
 - `src/analyzer.py`: file analysis and the command-line entry point
-- `src/report.py`: plain-text report formatting
+- `src/report.py`: text and JSON report formatting
 - `tests/`: unit tests
 - `docs/TEMPLATE_ANALYSIS.md`: analysis report template
 - `.github/workflows/`: CI and the manual lockfile workflow
@@ -65,15 +66,17 @@ Header    : 68 65 6c 6c 6f
 
 An empty file is reported as `(empty file)`.
 
+Add `--json` to print the result as JSON instead: `python -m src.analyzer path/to/sample.bin --json`
+
 As a Python module:
 
 `from src.analyzer import analyze_file`
 
-`analyze_file("path/to/sample.bin")` returns a dictionary with the keys `name`, `size_bytes`, `sha256`, and `header_hex`. Use `src.report.format_report` to render it as text.
+`analyze_file("path/to/sample.bin")` returns a dictionary with the keys `name`, `size_bytes`, `sha256`, and `header_hex`. Use `src.report.format_report` or `src.report.format_json` to render it.
 
 ## Error Handling
 
-`analyze_file` raises `AnalysisError` when the path does not exist, is not a regular file (for example a directory), or cannot be read.
+`analyze_file` raises `AnalysisError` when the path does not exist (including broken symlinks), is not a regular file (for example a directory), or cannot be read.
 
 Command-line exit codes:
 
