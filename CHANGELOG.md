@@ -5,6 +5,8 @@ The format follows Keep a Changelog.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-27
+
 ### Added
 - `--json` flag and `src.report.format_json()` for machine-readable output.
 - Tests for JSON output, broken symlinks, empty paths, and paths with null bytes.
