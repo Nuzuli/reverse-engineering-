@@ -6,6 +6,19 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [0.3.1] - 2026-11-01
 
+## [0.3.2] - 2026-11-02
+
+### Added
+
+- `validate_path()` and `InvalidPathError` (a subclass of `AnalysisError`): empty, whitespace-only, and null-byte paths are rejected with a clear message before any filesystem access.
+- `src/logging_config.py` with `configure_logging()` and `JsonFormatter` for JSON log lines on stderr.
+- Setting `LOG_LEVEL` (for example `LOG_LEVEL=INFO`) enables JSON logging in the CLI.
+- Tests for path validation, JSON logging, `format_json` error paths, and `--json` error cases.
+
+### Changed
+
+- The CLI passes the raw path argument to `analyze_file()`, so an empty argument is now reported as "Path must not be empty".
+
 ### Added
 
 - `FileNotFoundAnalysisError`, `NotARegularFileError`, and `FileReadError`, all subclasses of `AnalysisError`, so callers can tell failure modes apart. Existing code that catches `AnalysisError` keeps working.
