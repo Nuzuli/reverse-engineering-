@@ -4,8 +4,11 @@
 import argparse
 import hashlib
 import logging
+import os
 from pathlib import Path
 from typing import Any, Dict, Union
+
+from src.logging_config import LOG_LEVEL_ENV, configure_logging
 
 from src.report import format_json, format_report
 
@@ -98,6 +101,8 @@ def main() -> None:
         "--json", action="store_true", help="Print the result as JSON"
     )
     args = parser.parse_args()
+    if os.environ.get(LOG_LEVEL_ENV):
+        configure_logging()
 
     try:
         result = analyze_file(args.file)
