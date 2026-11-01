@@ -28,17 +28,39 @@ class FileReadError(AnalysisError):
     """Raised when a regular file cannot be read."""
 
 
+class InvalidPathError(AnalysisError):
+    """Raised when a path argument is empty or contains a null byte."""
+
+
+def validate_path(raw: Union[str, Path]) -> Path:
+    """Return ``raw`` as a Path, or raise InvalidPathError for unusable input.
+
+    Must run on the raw argument: ``Path("")`` silently becomes ``.``.
+    """
+    if isinstance(raw, str) and not raw.strip():
+        logger.debug("analyze_rejected reason=empty_path")
+        raise InvalidPathError("Path must not be empty")
+    if "\0" in str(raw):
+        logger.debug("analyze_rejected reason=null_byte_in_path")
+        raise InvalidPathError("Path must not contain null bytes")
+    return Path(raw)
+
+
 def analyze_file(file_path: Union[str, Path]) -> Dict[str, Any]:
     """Return basic information about a regular file."""
-    file_path = Path(file_path)
+    file_path = validate_path(file_path)
     logger.info("analyze_start path=%s", file_path)
 
     if not file_path.exists():
-        logger.debug("analyze_rejected path=%s reason=file_not_found", file_path)
+        logger.debug(
+            "analyze_rejected path=%s reason=file_not_found", file_path
+        )
         raise FileNotFoundAnalysisError(f"File not found: {file_path}")
 
     if not file_path.is_file():
-        logger.debug("analyze_rejected path=%s reason=not_a_regular_file", file_path)
+        logger.debug(
+            "analyze_rejected path=%s reason=not_a_regular_file", file_path
+        )
         raise NotARegularFileError(f"Not a regular file: {file_path}")
 
     sha256 = hashlib.sha256()
@@ -78,7 +100,7 @@ def main() -> None:
     args = parser.parse_args()
 
     try:
-        result = analyze_file(Path(args.file))
+        result = analyze_file(args.file)
     except AnalysisError as error:
         parser.error(str(error))
 
