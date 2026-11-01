@@ -40,13 +40,22 @@ git clone https://github.com/Nuzuli/reverse-engineering-.git
 cd reverse-engineering-
 python -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements-lock.txt.
 python -m pytest tests/ -v
 ```
 
 On Windows, activate the environment with `.venv\Scripts\activate`.
 
 For an exact, reproducible toolchain, install from the lockfile instead: `pip install -r requirements-lock.txt`. After changing `requirements.txt`, regenerate it by running the manual "Update lockfile" workflow in the Actions tab.
+
+## Reproducible installs
+
+`requirements-lock.txt` is committed to the repository and checked by CI, so every install uses the same pinned versions:
+
+    pip install -r requirements-lock.txt
+    python -m pytest tests/ -v
+
+The runtime has no third-party dependencies; `requirements.txt` only lists the development toolchain (pytest, pytest-cov, ruff, mypy). After changing it, regenerate the lockfile by running the "Update lockfile" workflow in the Actions tab. CI fails if the two files disagree.
 
 ## Usage
 
