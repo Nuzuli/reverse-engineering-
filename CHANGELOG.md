@@ -1,29 +1,37 @@
 # Changelog
 
-All notable changes to this project are documented in this file.
-The format follows Keep a Changelog.
+All notable changes to this project are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-11-01
+
 ### Added
+
 - `FileNotFoundAnalysisError`, `NotARegularFileError`, and `FileReadError`, all subclasses of `AnalysisError`, so callers can tell failure modes apart. Existing code that catches `AnalysisError` keeps working.
+- `tests/test_cli_exit_codes.py`: end-to-end tests that run `python -m src.analyzer` in a subprocess and check exit codes 0 and 2 and the error messages.
 
 ### Changed
+
 - Analyzer log messages now use structured `key=value` fields (`path`, `name`, `size_bytes`, `reason`, `error`), with tests that assert them.
+- CI installs from `requirements-lock.txt` and fails if the lockfile is out of sync with `requirements.txt`.
 
 ## [0.3.0] - 2026-10-27
 
 ### Added
+
 - `--json` flag and `src.report.format_json()` for machine-readable output.
 - Tests for JSON output, broken symlinks, empty paths, and paths with null bytes.
 - "Project Type" section in the README.
 
 ### Removed
+
 - `Dockerfile` and the Docker section of the README. The project is a standard library command-line tool, not infrastructure code.
 
 ## [0.2.0] - 2026-10-25
 
 ### Added
+
 - `src/report.py` with `format_report()`, extracted from the CLI and covered by its own tests.
 - Logging through the standard `logging` module, with tests that assert the log records.
 - `Dockerfile` for running the analyzer in an isolated container as a non-root user.
@@ -32,6 +40,7 @@ The format follows Keep a Changelog.
 - Grouped monthly Dependabot updates.
 
 ### Changed
+
 - The CLI is now started with `python -m src.analyzer`.
 - `src` is now a regular Python package.
 - Updated pytest to 9.0.3 and pytest-cov to 7.1.0 to resolve a reported vulnerability in pytest.
@@ -39,6 +48,7 @@ The format follows Keep a Changelog.
 ## [0.1.0] - 2026-10-24
 
 ### Added
+
 - `analyze_file()` returns file name, size, SHA-256 hash, and first 16 bytes in hex.
 - Command-line interface for analyzing a single file.
 - `AnalysisError` for missing, non-regular, or unreadable files.
