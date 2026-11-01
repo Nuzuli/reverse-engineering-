@@ -83,6 +83,16 @@ As a Python module:
 
 `analyze_file("path/to/sample.bin")` returns a dictionary with the keys `name`, `size_bytes`, `sha256`, and `header_hex`. Use `src.report.format_report` or `src.report.format_json` to render it.
 
+## Logging
+
+Logging is off by default. Set `LOG_LEVEL` to print one JSON object per log record to stderr:
+
+```bash
+LOG_LEVEL=INFO python -m src.analyzer path/to/sample.bin
+```
+
+Each line has `timestamp`, `level`, `logger`, and `message`. Unknown level names fall back to `WARNING`.
+
 ## Error Handling
 
 `analyze_file` raises `AnalysisError` when the path does not exist (including broken symlinks), is not a regular file (for example a directory), or cannot be read.
