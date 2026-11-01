@@ -18,12 +18,23 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-          cache-dependency-path: requirements.txt
+          cache-dependency-path: requirements-lock.txt
+
+      - name: Check lockfile is in sync
+        run: |
+          while IFS= read -r line; do
+            case "$line" in ""|"#"*|"-r "*) continue ;; esac
+            grep -qixF "$line" requirements-lock.txt || {
+              echo "requirements-lock.txt is missing or out of date: $line"
+              echo "Run the 'Update lockfile' workflow to regenerate it."
+              exit 1
+            }
+          done < requirements.txt
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r requirements-lock.txt
 
       - name: Audit dependencies
         run: |
