@@ -10,6 +10,10 @@ All notable changes to this project are documented in this file. The format foll
 
 ### Added
 
+- `tests/test_path_edge_cases.py`: tests for symlink loops and unreadable files.
+
+### Added
+
 - `validate_path()` and `InvalidPathError` (a subclass of `AnalysisError`): empty, whitespace-only, and null-byte paths are rejected with a clear message before any filesystem access.
 - `src/logging_config.py` with `configure_logging()` and `JsonFormatter` for JSON log lines on stderr.
 - Setting `LOG_LEVEL` (for example `LOG_LEVEL=INFO`) enables JSON logging in the CLI.
