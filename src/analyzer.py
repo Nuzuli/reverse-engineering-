@@ -68,7 +68,7 @@ def get_header_bytes(file_path, num_bytes=16):
 def analyze_file(file_path):
     """Lakukan analisis lengkap pada satu file."""
     validate_path(file_path)
-    
+
     return {
         "name": os.path.basename(file_path),
         "size_bytes": os.path.getsize(file_path),
@@ -81,13 +81,13 @@ def format_report(result):
     """Format hasil analisis sebagai teks."""
     if result.get("size_bytes", 0) == 0:
         return "File kosong."
-    
+
     return (
         f"=== LAPORAN ANALISIS FILE ===\n"
         f"Nama file : {result['name']}\n"
         f"Ukuran    : {result['size_bytes']} byte\n"
-        f"SHA-256    : {result['sha256']}\n"
-        f"Header     : {result['header_hex']}\n"
+        f"SHA-256   : {result['sha256']}\n"
+        f"Header    : {result['header_hex']}\n"
     )
 
 
@@ -100,16 +100,16 @@ def format_json(result):
 def main():
     """Fungsi utama untuk menjalankan dari baris perintah."""
     args = sys.argv[1:]
-    
+
     if not args or "-h" in args or "--help" in args:
         print("Penggunaan: python analyzer.py <path_file> [--json]")
         print("Opsi:")
         print("  --json    Tampilkan hasil dalam format JSON")
         sys.exit(0)
-    
+
     use_json = "--json" in args
     file_paths = [a for a in args if a != "--json"]
-    
+
     for path in file_paths:
         try:
             result = analyze_file(path)
@@ -117,15 +117,15 @@ def main():
                 print(format_json(result))
             else:
                 print(format_report(result))
-        
+
         except AnalysisError as e:
             logger.error(f"Analysis error: {e}")
             sys.exit(2)
-        
+
         except OSError as e:
             logger.error(f"File system error: cannot access '{e.filename}': {e.strerror}")
             sys.exit(2)
-        
+
         except KeyboardInterrupt:
             logger.info("Operation cancelled by user")
             sys.exit(1)
