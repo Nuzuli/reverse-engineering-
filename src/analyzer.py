@@ -1,118 +1,134 @@
-#!/usr/bin/env python3
-"""Inspect basic file properties for reverse engineering."""
+"""
+analyzer.py
+Alat analisis file sederhana: hash SHA-256, ukuran file, dan byte header.
+Hanya menggunakan pustaka standar Python.
 
-import argparse
+Penulis: Nuzuli
+Versi: 0.4.0
+Lisensi: MIT
+"""
+
+import sys
+import os
 import hashlib
 import logging
-import os
-from pathlib import Path
-from typing import Any, Dict, Union
-
-from src.logging_config import LOG_LEVEL_ENV, configure_logging
-from src.report import format_json, format_report
-
-logger = logging.getLogger(__name__)
 
 
 class AnalysisError(Exception):
-    """Raised when a file cannot be analyzed."""
+    """Khusus untuk error saat proses analisis file."""
+    pass
 
 
-class FileNotFoundAnalysisError(AnalysisError):
-    """Raised when the path does not exist."""
+def resolve_log_level():
+    """Baca tingkat log dari variabel lingkungan LOG_LEVEL."""
+    level_name = os.environ.get("LOG_LEVEL", "").upper()
+    levels = {
+        "DEBUG": logging.DEBUG,
+        "INFO": logging.INFO,
+        "WARNING": logging.WARNING,
+        "ERROR": logging.ERROR,
+        "CRITICAL": logging.CRITICAL
+    }
+    return levels.get(level_name, logging.WARNING)
 
 
-class NotARegularFileError(AnalysisError):
-    """Raised when the path exists but is not a regular file."""
+logging.basicConfig(level=resolve_log_level(), format="%(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
 
 
-class FileReadError(AnalysisError):
-    """Raised when a regular file cannot be read."""
+def validate_path(path):
+    """Validasi jalur file sebelum diproses."""
+    if not path:
+        raise AnalysisError("Path tidak boleh kosong")
+    if "\x00" in path:
+        raise AnalysisError("Path mengandung karakter yang tidak diperbolehkan")
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"File tidak ditemukan: {path}")
+    if not os.path.isfile(path):
+        raise AnalysisError(f"Bukan file biasa: {path}")
+    return path
 
 
-class InvalidPathError(AnalysisError):
-    """Raised when a path argument is empty or contains a null byte."""
+def calculate_sha256(file_path):
+    """Hitung hash SHA-256 dari sebuah file."""
+    sha256_hash = hashlib.sha256()
+    with open(file_path, "rb") as f:
+        for chunk in iter(lambda: f.read(8192), b""):
+            sha256_hash.update(chunk)
+    return sha256_hash.hexdigest()
 
 
-def validate_path(raw: Union[str, Path]) -> Path:
-    """Return ``raw`` as a Path, or raise InvalidPathError for unusable input.
-
-    Must run on the raw argument: ``Path("")`` silently becomes ``.``.
-    """
-    if isinstance(raw, str) and not raw.strip():
-        logger.debug("analyze_rejected reason=empty_path")
-        raise InvalidPathError("Path must not be empty")
-    if "\0" in str(raw):
-        logger.debug("analyze_rejected reason=null_byte_in_path")
-        raise InvalidPathError("Path must not contain null bytes")
-    return Path(raw)
+def get_header_bytes(file_path, num_bytes=16):
+    """Ambil byte pertama dari sebuah file."""
+    with open(file_path, "rb") as f:
+        header = f.read(num_bytes)
+    return " ".join(f"{b:02x}" for b in header)
 
 
-def analyze_file(file_path: Union[str, Path]) -> Dict[str, Any]:
-    """Return basic information about a regular file."""
-    file_path = validate_path(file_path)
-    logger.info("analyze_start path=%s", file_path)
-
-    if not file_path.exists():
-        logger.debug(
-            "analyze_rejected path=%s reason=file_not_found", file_path
-        )
-        raise FileNotFoundAnalysisError(f"File not found: {file_path}")
-
-    if not file_path.is_file():
-        logger.debug(
-            "analyze_rejected path=%s reason=not_a_regular_file", file_path
-        )
-        raise NotARegularFileError(f"Not a regular file: {file_path}")
-
-    sha256 = hashlib.sha256()
-
-    try:
-        with file_path.open("rb") as file:
-            header = file.read(16)
-            sha256.update(header)
-
-            for chunk in iter(lambda: file.read(8192), b""):
-                sha256.update(chunk)
-    except OSError as error:
-        logger.debug("analyze_failed path=%s error=%s", file_path, error)
-        raise FileReadError(
-            f"Unable to read file: {file_path}"
-        ) from error
-
-    size = file_path.stat().st_size
-    logger.info("analyze_done name=%s size_bytes=%d", file_path.name, size)
-
+def analyze_file(file_path):
+    """Lakukan analisis lengkap pada satu file."""
+    validate_path(file_path)
+    
     return {
-        "name": file_path.name,
-        "size_bytes": size,
-        "sha256": sha256.hexdigest(),
-        "header_hex": header.hex(" "),
+        "name": os.path.basename(file_path),
+        "size_bytes": os.path.getsize(file_path),
+        "sha256": calculate_sha256(file_path),
+        "header_hex": get_header_bytes(file_path)
     }
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Inspect basic properties of a file."
+def format_report(result):
+    """Format hasil analisis sebagai teks."""
+    if result.get("size_bytes", 0) == 0:
+        return "File kosong."
+    
+    return (
+        f"=== LAPORAN ANALISIS FILE ===\n"
+        f"Nama file : {result['name']}\n"
+        f"Ukuran    : {result['size_bytes']} byte\n"
+        f"SHA-256    : {result['sha256']}\n"
+        f"Header     : {result['header_hex']}\n"
     )
-    parser.add_argument("file", help="Path to the file to analyze")
-    parser.add_argument(
-        "--json", action="store_true", help="Print the result as JSON"
-    )
-    args = parser.parse_args()
-    if os.environ.get(LOG_LEVEL_ENV):
-        configure_logging()
 
-    try:
-        result = analyze_file(args.file)
-    except AnalysisError as error:
-        parser.error(str(error))
-    except Exception as error:  # batas terakhir CLI
-        logger.error("analyze_unhandled_error error_type=%s", type(error).__name__)
-        logger.debug("analyze_unhandled_error_detail", exc_info=True)
-        parser.error("kesalahan tak terduga; jalankan dengan LOG_LEVEL=DEBUG")
 
-    print(format_json(result) if args.json else format_report(result))
+def format_json(result):
+    """Format hasil analisis sebagai JSON sederhana."""
+    import json
+    return json.dumps(result, indent=2)
+
+
+def main():
+    """Fungsi utama untuk menjalankan dari baris perintah."""
+    args = sys.argv[1:]
+    
+    if not args or "-h" in args or "--help" in args:
+        print("Penggunaan: python analyzer.py <path_file> [--json]")
+        print("Opsi:")
+        print("  --json    Tampilkan hasil dalam format JSON")
+        sys.exit(0)
+    
+    use_json = "--json" in args
+    file_paths = [a for a in args if a != "--json"]
+    
+    for path in file_paths:
+        try:
+            result = analyze_file(path)
+            if use_json:
+                print(format_json(result))
+            else:
+                print(format_report(result))
+        
+        except AnalysisError as e:
+            logger.error(f"Analysis error: {e}")
+            sys.exit(2)
+        
+        except OSError as e:
+            logger.error(f"File system error: cannot access '{e.filename}': {e.strerror}")
+            sys.exit(2)
+        
+        except KeyboardInterrupt:
+            logger.info("Operation cancelled by user")
+            sys.exit(1)
 
 
 if __name__ == "__main__":
