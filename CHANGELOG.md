@@ -1,3 +1,15 @@
+## [v0.4.0] — 2026-11-05
+
+### Ditambahkan
+- Template Pull Request dan Issue
+- Tes untuk penanganan error
+- Tes untuk pengaturan LOG_LEVEL
+
+### Diperbaiki
+- Penanganan exception lebih spesifik
+- Pesan error konsisten dalam bahasa Inggris
+
+
 # Changelog
 
 All notable changes to this project are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
