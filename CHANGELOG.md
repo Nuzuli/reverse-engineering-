@@ -10,6 +10,10 @@ All notable changes to this project are documented in this file. The format foll
 
 ### Added
 
+- Unexpected errors in the CLI are logged as `analyze_unhandled_error` and exit with code 2 and a short message instead of a traceback.
+
+### Added
+
 - `tests/test_path_edge_cases.py`: tests for symlink loops and unreadable files.
 
 ### Added
