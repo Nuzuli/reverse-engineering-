@@ -9,7 +9,6 @@ from pathlib import Path
 from typing import Any, Dict, Union
 
 from src.logging_config import LOG_LEVEL_ENV, configure_logging
-
 from src.report import format_json, format_report
 
 logger = logging.getLogger(__name__)
@@ -108,10 +107,10 @@ def main() -> None:
         result = analyze_file(args.file)
     except AnalysisError as error:
         parser.error(str(error))
-       except Exception as error:  # batas terakhir CLI: catat terstruktur, tanpa traceback di layar
+    except Exception as error:  # batas terakhir CLI
         logger.error("analyze_unhandled_error error_type=%s", type(error).__name__)
         logger.debug("analyze_unhandled_error_detail", exc_info=True)
-        parser.error("terjadi kesalahan tak terduga; jalankan dengan LOG_LEVEL=DEBUG untuk detail")
+        parser.error("kesalahan tak terduga; jalankan dengan LOG_LEVEL=DEBUG")
 
     print(format_json(result) if args.json else format_report(result))
 
