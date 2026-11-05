@@ -1,7 +1,7 @@
 import unittest
 import os
 import logging
-from src.analyzer import resolve_log_level
+from src.logging_config import resolve_level
 
 class TestLoggingConfig(unittest.TestCase):
 
