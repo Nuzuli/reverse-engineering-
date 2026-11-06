@@ -1,20 +1,26 @@
 import sys
 import logging
+from pathlib import Path
 from src.exceptions import AnalysisError
 
 logger = logging.getLogger(__name__)
 
+def analyze_file(file_path: str | Path) -> dict:
+    """Analyze a given file and return results."""
+    path = Path(file_path)
+    if not path.exists():
+        raise AnalysisError(f"File not found: {path}")
+    return {"status": "success", "file": str(path)}
+
 def main() -> None:
     """Main entry point for the reverse-engineering CLI tool."""
     try:
-        # Masukkan logika atau pemanggilan fungsi utama CLI Anda di sini
-        pass
+        if len(sys.argv) > 1:
+            analyze_file(sys.argv[1])
     except (AnalysisError, OSError) as e:
-        # Tangkap exception spesifik yang diharapkan
         logger.error(f"Analysis failed: {e}")
         sys.exit(1)
     except Exception:
-        # Untuk error tak terduga, log dengan structured error tanpa variabel 'e'
         logger.exception("An unexpected error occurred during execution.")
         sys.exit(1)
 
