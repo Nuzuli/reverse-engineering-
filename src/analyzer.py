@@ -48,7 +48,7 @@ def main(argv=None):
     try:
         result = analyze_file(args.file)
     except AnalysisError as error:
-        parser.error(str(error))
+   parser.error("unexpected error; run with LOG_LEVEL=DEBUG for details")
 
     print("=== File Analysis Report ===")
     print(f"File name : {result['name']}")
